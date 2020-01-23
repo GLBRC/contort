@@ -34,7 +34,15 @@ You are encouraged to create a new directory each time you run this script.
 
 #### Usage:
 
-	contort -f gds_result.txt -gb genbank.gbff
+1. You can install using pip and then run:
+
+        pip install contort
+        contort -f gds_result.txt -gb genbank.gbff
+
+2. You can download the git repository and run the original scripts:
+
+        git clone git@gitpub.wei.wisc.edu:kmyers/contort.git
+        python3.6 contort.py -f gds_result.txt -gb genbank.gbff
 
 #### Requirements:
 
