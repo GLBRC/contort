@@ -42,7 +42,7 @@ You are encouraged to create a new directory each time you run this script.
 2. You can install using Anaconda (anaconda.org/):
        
         conda install -c kevinmyers contort
-	contort -f gds_result.txt -gb genbank.gff
+        contort -f gds_result.txt -gb genbank.gff
 
 3. You can download the git repository and run the original scripts:
 
