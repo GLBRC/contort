@@ -65,7 +65,9 @@ To install the R libraries:
 
 ## Output : 
 
-Primary output is a single text file containing the gene IDs on the first column
+COnTORT_organized_transcriptomic_data.txt is the primary output.
+
+Primary output is a single text file containing the gene annotations on the first five columns
     and the mean centered expression data present in the remaining columns. The first row
     contains the headers references the specific GEO IDs for each experiment. 
     Note that annotations no present in the GenBank file are listed with "N/A".
