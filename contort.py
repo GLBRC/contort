@@ -262,6 +262,7 @@ def GEOquery():
         out = each.split('.gz')[0]
         with gzip.open(each, 'r') as f_in, open(out, 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out) # unzip .gz files
+            f_in.close()
             os.remove(each)
 
     series = []
