@@ -18,6 +18,8 @@ upper right hand corner of the search results, select 'Send to:' and choose
 results. This script will search this file for series indicators and download
 the respective files and directories. You will also need the GenBank file for your organism.
 
+COnTORT has been tested on Linux (Ubuntu and CentOS), MacOS (>10.13), and Windows 10.
+
 ## Input : 
 
  - A gds_result text file downloaded from NCBI.
@@ -52,7 +54,7 @@ You are encouraged to create a new directory each time you run this script.
 #### Requirements:
 
  - python 3
- - R libraries GEOquery and tidyverse
+ - R and R libraries GEOquery and tidyverse
  - Python modles argparse, ftplib, functools, glob, gzip, io, os, pandas, re, shutil, subprocess, sys, time
 
 To install the R libraries:
