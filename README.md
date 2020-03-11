@@ -54,16 +54,7 @@ You are encouraged to create a new directory each time you run this script.
 #### Requirements:
 
  - python 3
- - R and R libraries GEOquery and tidyverse
  - Python modles argparse, ftplib, functools, glob, gzip, io, os, pandas, re, shutil, subprocess, sys, time
-
-To install the R libraries:
-
-    install.packages("tidyverse")
-
-    if (!requireNamespace("BiocManager", quietly = TRUE))
-        install.packages("BiocManager")
-    BiocManager::install("GEOquery")
 
 ## Output : 
 
@@ -141,16 +132,17 @@ Subdirectories are created for all the files and to organize the directory:
 	destination = user input
 	sources of files = from the runFindGEOAddresses module
 
-#### GEOquery( ):
+#### GEOannotate( ):
 
-	Organize the GEO series files
+    Organize the GEO series files
     
-    This first finds and copies all series_matrix.txt.gz files from the FTP download.
-    These files are then unzipped and used to create the series.txt input file.
-    Run the Rscript GEO_annotate.r - requires GEOpatch.r
-    Runs GEOquery in R to download and combine the annotation with the log2 normalized
-    data in the GSE files.
-    This is then written to a new file for use in downstream steps.
+    This is a replacement for R and GEOquery. This will organize the GEO data available.
+    
+    This first finds and copies all soft.gz files for all GSE (series) data in the 
+    GEO download from the previous steps. Using GEOparse, the metadata for each gene is 
+    collected and concatentated with the normalized data present for each series.
+    
+    The new files are written for downstream steps and the copied soft.gz files are deleted.
 
 #### gffMatch( GBFF ):
 
