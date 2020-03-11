@@ -75,14 +75,12 @@ Notes
 import argparse
 from Bio import SeqIO
 import ftplib
-import glob
-import gzip
-import io
+import GEOparse
 import os
 import pandas as pd
+from pathlib import Path
 import re
 import shutil
-import subprocess
 import sys
 import time
 import urllib.request
@@ -243,28 +241,29 @@ def download_ftp_tree(ftp_handle, path, destination, overwrite=False, guess_by_e
     run_mirror_ftp_dir(ftp_handle, path, overwrite, guess_by_extension)
     os.chdir(original_directory)        # reset working directory to what it was before function exec
 
-def GEOquery():
+def GEOannotate():
     """
-    Organize the GEO series files
+    This is a replacement for R and GEOquery. This will organize the GEO data available.
     
-    This first finds and copies all series_matrix.txt.gz files from the FTP download.
-    These files are then unzipped and used to create the series.txt input file.
-    Run the Rscript GEO_annotate.r - requires GEOpatch.r
-    Runs GEOquery in R to download and combine the annotation with the log2 normalized
-    data in the GSE files.
-    This is then written to a new file for use in downstream steps.
+    This first finds and copies all soft.gz files for all GSE (series) data in the 
+    GEO download from the previous steps. Using GEOparse, the metadata for each gene is 
+    collected and concatentated with the normalized data present for each series.
+    
+    The new files are written for downstream steps and the copied soft.gz files are deleted.
     """
-    for file in glob.glob('./**/*matrix.txt*', recursive = True):
-        shutil.copy(file, '.')
+    for file in Path("./geo").rglob('*.soft.gz'):
+        shutil.copy(file, './')
         
-    zipped = [ fn for fn in os.listdir(os.getcwd()) if fn.endswith("gz") ] # collect all zipped FASTQ files
-    for each in zipped:
-        out = each.split('.gz')[0]
-        with gzip.open(each, 'r') as f_in, open(out, 'wb') as f_out:
-            shutil.copyfileobj(f_in, f_out) # unzip .gz files
-            f_in.close()
-            os.remove(each)
-
+    to_remove = [ fn for fn in os.listdir(os.getcwd()) if fn.endswith("full.soft.gz") ]
+    for each in to_remove:
+        os.remove(each)
+    
+    to_remove2 = [ fn for fn in os.listdir(os.getcwd()) if fn.startswith("GDS") ]
+    for each in to_remove2:
+        os.remove(each)
+    
+    soft_files = [ fn for fn in os.listdir(os.getcwd()) if fn.endswith("soft.gz") ] 
+    
     series = []
     
     # Open directories file and get GSE entires. Write to list
@@ -277,22 +276,28 @@ def GEOquery():
             if series_name.startswith("GSE"):
                 series.append(series_name)
             
-    with open('series.txt', 'a+') as f:
-        for row in series:
-            f.write("%s\n" % str(row)) #save series entires to file
-    
-    # Run GEO_annotate.r to pull annotation files for each series entiry
-    this_dir, this_filename = os.path.split(__file__)
-    RSCRIPT_PATH = os.path.join(this_dir, "GEO_annotate.r")    
-    cmd = [ 'Rscript', RSCRIPT_PATH ]
-    output = subprocess.Popen(cmd, stderr=subprocess.PIPE).communicate()
-    result = output[1].decode('utf-8')
-    
-    # write errors to log file
-    
-    with open('GEOquery_log.txt', 'a') as log:
-        log.write(result)
-        log.write("\n")
+    #with open('series.txt', 'a+') as f:
+     #   for row in series:
+      #      f.write("%s\n" % str(row)) #save series entires to file
+
+    for each in soft_files:
+        gse = GEOparse.get_GEO(filepath=each)
+        samples = gse.pivot_samples("VALUE")
+        samples.reset_index(level = 0, inplace = True)
+        samples.rename(columns={'ID_REF':"ID"}, inplace = True)
+        
+        for key,value in gse.gpls.items():
+            GPL = key
+        annotation = gse.gpls[GPL].table
+        annotation.reset_index(level = 0, inplace = True)
+        
+        result = pd.merge(annotation, samples)
+        gseID = each.split("_")[0]
+        output = gseID + "_GEOannotate_results.txt"
+        result.to_csv(output, sep = "\t", index = False)
+        
+    for each in soft_files:
+        os.remove(each)
 
 def gffMatch( GBFF ):
     """
@@ -300,7 +305,7 @@ def gffMatch( GBFF ):
     
     Using dictionaries created from the GenBank file for the orgainsm, this
     script will search for matches to the gene annotation in the GenBank file and
-    retain only those data with matches. This will make new files for each GEOquery
+    retain only those data with matches. This will make new files for each GEOannotate
     output with columns representing gene annotations and then the log2 normalized data
     from the GEO series files. The data are then mean centered and joined together
     with the gene annotations annotation as the key. All blanks are retained for consistency.
@@ -396,19 +401,11 @@ def gffMatch( GBFF ):
                         combo[each] = []
                         combo[each].append(all_annotations)
     
-    GEOquery_results_all = [ fn for fn in os.listdir(os.getcwd()) if fn.endswith("GEOquery_results.txt") ]
+    GEOannotate_results = [ fn for fn in os.listdir(os.getcwd()) if fn.endswith("GEOannotate_results.txt") ]
 
-    # Remove any GEOquery results that are less than 1 MB (no data)
+    # Correlate GEOannotate results with gene annotation dictionary
     
-    for each in GEOquery_results_all:
-        if os.path.getsize(each) < 900:
-            os.remove(each)
-    
-    GEOquery_results = [ fn for fn in os.listdir(os.getcwd()) if fn.endswith("GEOquery_results.txt") ]
-
-    # Correlate GEOquery results with gene annotation dictionary
-    
-    for each in GEOquery_results:
+    for each in GEOannotate_results:
         with open(each, 'r', encoding = "utf-8", errors = 'ignore') as file:
             geoName = each.split('_')[0]
             firstLines = file.readlines()
@@ -530,9 +527,9 @@ def cleanUp( cwd ):
     [ os.rename( (cwd + fn), (originalContigDir + fn) ) for fn in os.listdir(cwd) if fn.endswith("series_matrix.txt") ]
     [ os.rename( (cwd + fn), (originalContigDir + fn) ) for fn in os.listdir(cwd) if fn.endswith("matrix.txt") ]
     # Organize GEOquery results files
-    os.mkdir( "GEOquery_results" )
+    os.mkdir( "GEOannotate_results" )
     gffDir = cwd + "/GEOquery_results/"
-    [ os.rename( (cwd + fn), (gffDir + fn) ) for fn in os.listdir(cwd) if fn.endswith("GEOquery_results.txt") ]
+    [ os.rename( (cwd + fn), (gffDir + fn) ) for fn in os.listdir(cwd) if fn.endswith("GEOannotate_results.txt") ]
     # Organize GFF match output result files
     os.mkdir( "GeneOrf_match_output" )
     inputContigsDir = cwd + "/GeneOrf_match_output/"
@@ -634,7 +631,8 @@ def main():
 
     print("Organizing and combining the transcriptomic data downloaded from NCBI GEO...\n") 
     
-    GEOquery()
+    #GEOquery()
+    GEOannotate()
     gffMatch( GBFF )
     cleanUp( cwd )
     
