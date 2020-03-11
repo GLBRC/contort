@@ -41,12 +41,7 @@ You are encouraged to create a new directory each time you run this script.
         pip install contort
         contort -f gds_result.txt -gb genbank.gbff
 
-2. You can install using Anaconda (anaconda.org/):
-       
-        conda install -c kevinmyers contort
-        contort -f gds_result.txt -gb genbank.gff
-
-3. You can download the git repository and run the original scripts:
+2. You can download the git repository and run the original scripts:
 
         git clone https://github.com/GLBRC/contort.git
         python3.6 contort.py -f gds_result.txt -gb genbank.gbff
@@ -54,7 +49,7 @@ You are encouraged to create a new directory each time you run this script.
 #### Requirements:
 
  - python 3
- - Python modles argparse, ftplib, functools, glob, gzip, io, os, pandas, re, shutil, subprocess, sys, time
+ - Python modles argparse, ftplib, functools, GEOparse, glob, gzip, io, os, pandas, re, shutil, subprocess, sys, time
 
 ## Output : 
 
