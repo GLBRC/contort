@@ -1,7 +1,6 @@
-
 # **COnTORT** 
 
-## Purpose:
+### Purpose:
 
 COnTROT (COmprehensive Transcriptomic ORganizational Tool) is a program that
 will download and organize all expression data in GEO related to a search result.
@@ -22,36 +21,30 @@ Note that COnTORT can only download and combine normalized and processed data im
 
 COnTORT has been tested on Linux (Ubuntu and CentOS), MacOS (>10.13), and Windows 10.
 
-## Input : 
+### Input : 
 
  - The GenBank (.gbff) for your organism, downloaded from NCBI.
              
 You are encouraged to create a new directory each time you run this script.
-## **THIS WILL FAIL IF RUN ON VERSION OF PYTHON BELOW 3**
 
-#### Usage:
+### Usage:
 
 1. You can install using pip and then run:
 
         pip install contort
-        contort -f gds_result.txt -gb genbank.gbff
+        contort
 
-2. You can install using Anaconda (anaconda.org/):
-       
-        conda install -c kevinmyers contort
-        contort -f gds_result.txt -gb genbank.gff
-
-3. You can download the git repository and run the original scripts:
+2. You can download the git repository and run the original scripts:
 
         git clone https://github.com/GLBRC/contort.git
-        python3.6 contort.py -f gds_result.txt -gb genbank.gbff
+        python3.6 contort.py
 
-#### Requirements:
+### Requirements:
 
  - python 3
  - Python modules argparse, Bio, ftplib, functools, GEOparse, os, pandas, re, shutil, sys, subprocess, sys, tkinter, time, urllib
 
-## Output : 
+### Output : 
 
 COnTORT_organized_transcriptomic_data.txt is the primary output.
 
@@ -75,7 +68,7 @@ Subdirectories are created for all the files and to organize the directory:
 	- FTP_files               - files used to download the data from GEO via FTP
 	- log_files               - all log files from each step as well as other saved files
 
-## Outline of steps & commands used in pipeline:
+### Outline of steps & commands used in pipeline:
 
 #### runFindGEOAddresses( GDSfile ):
 
@@ -130,9 +123,7 @@ Subdirectories are created for all the files and to organize the directory:
 #### GEOannotate( ):
 
     Organize the GEO series files
-    
-    This is a replacement for R and GEOquery. This will organize the GEO data available.
-    
+       
     This first finds and copies all soft.gz files for all GSE (series) data in the 
     GEO download from the previous steps. Using GEOparse, the metadata for each gene is 
     collected and concatentated with the normalized data present for each series.
