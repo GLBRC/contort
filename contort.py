@@ -66,9 +66,9 @@ Notes
         - Python modules argparse, Bio, ftplib, functools, GEOparse, os, pandas, re, shutil, sys, subprocess, sys, tkinter, time, urllib
 
     usage [standard]:
-        python3.6 CONTORT.py
+        python CONTORT.py
     
-    usage [from pip or Anaconda install]:
+    usage [from pip install]:
         contort
                 
 """
@@ -86,7 +86,7 @@ import re
 import shutil
 import sys
 import tkinter as tk
-from tkinter import messagebox, Label, Button, Entry, W, Tk, Toplevel, filedialog
+from tkinter import messagebox, Label, Button, Entry, W, Tk, Toplevel, filedialog, ttk
 import time
 import urllib.request as request
 
@@ -641,6 +641,8 @@ def main():
         def __init__(self, master):
             self.master = master
             master.title("COnTORT")
+            self.GenBank_File = None
+            self.file_only = None
             
             self.label = Label(master, text = "Please enter the information for COnTORT to run.", font=("Arial Bold", 15))
             self.label.grid(column=0, row=0)
@@ -656,12 +658,12 @@ def main():
             self.GenBankFileLabel = Label(master, text = "Open the GenBank File to Use", font=("Arial Bold", 13)).grid(row = 9, column = 0, sticky = W)
             self.GEO_term = Entry(master, width = 48)
             openGenBankFileCommand = master.register(self.GenBankFileOpen)
-            self.genbank_button = Button(master, text = "Select GenBank File",
+            self.genbank_button = ttk.Button(master, text = "Select GenBank File",
                                          command = openGenBankFileCommand).grid(row=10, column = 0, sticky = W, pady=10)
             self.GenBank_explanation = Label(master, text = "Use the button above to open the GenBank file (.gbff) for the annotation you would like to use in COnTORT.").grid(row = 11, column = 0, sticky = W)
             self.GenBank_explanation2 = Label(master, text = "GenBank annotation files can be downloaded for the specific strain and species").grid(row = 12, column = 0, sticky = W)
             self.GenBank_explanation3 = Label(master, text = "from https://www.ncbi.nlm.nih.gov/genome/.").grid(row = 13, column = 0, sticky = W)
-            self.GenBank_explanation3 = Label(master, text = "Use the  GenBank annotation file to match the NCBI GEO search of interest.").grid(row = 14, column = 0, sticky = W)
+            self.GenBank_explanation3 = Label(master, text = "Use the GenBank annotation file to match the NCBI GEO search of interest.").grid(row = 14, column = 0, sticky = W)
             self.GEOsearch_explanation4 = Label(master, text = "  ").grid(row = 15, column = 0, sticky = W)
             self.GEOsearch_explanation5 = Label(master, text = "  ").grid(row = 16, column = 0, sticky = W)
             
@@ -670,26 +672,37 @@ def main():
             runContortCommand = master.register(self.getInput)
             exitContortCommand = master.register(self.getCancel)
             
-            self.run_button=Button(master, text = "Run",
+            self.run_button=ttk.Button(master, text = "Run",
                        command = runContortCommand).grid(row = 20, column = 0, sticky = W)
             
-            self.cancel_button=Button(master, text = "Cancel",
+            self.cancel_button=ttk.Button(master, text = "Cancel",
                        command = exitContortCommand).grid(row = 20, column = 1, sticky = W)
             
         def GenBankFileOpen(self):
-            self.GenBank_File = filedialog.askopenfilename(title = "Open the GenBank file", filetypes = (("GenBank Files", "*.gbff"),("All Files", "*")))
-            self.file_only = self.GenBank_File.split('/')[-1]
+            filename = filedialog.askopenfilename(title = "Open the GenBank file", filetypes = (("GenBank Files", "*.gbff"),("All Files", "*")))
+            if filename: 
+                self.GenBank_File = filename
+                self.file_only = self.GenBank_File.split('/')[-1]
             
         def getInput(self):
             self.GEO_Search_Term = self.GEO_term.get()
-            self.GenBank_File
-            self.close_box_window = tk.messagebox.showinfo('Running COnTORT', "COnTORT will search and download the results for the following search term:\n{}\n\nCOnTORT will use the GenBank file: {}.".format(self.GEO_term.get(), self.file_only))
-            root.destroy()
+            #self.GenBank_File_use = self.GenBank_File
+            #self.GenBank_File_use
+            if not self.GenBank_File:
+                self.warning_window = tk.messagebox.showerror('Error', 'Please select a GenBank file to use.')
+            else:
+                self.close_box_window = tk.messagebox.askokcancel('Running COnTORT', "COnTORT will search and download the results for the following search term:\n{}\n\nCOnTORT will use the GenBank file: {}.".format(self.GEO_term.get(), self.file_only), default = 'ok')
+                if self.close_box_window == True:
+                    root.destroy()
+                else:
+                    return
         
         def getCancel(self):
             
             self.MsgBox_window = tk.messagebox.askokcancel("Exit COnTORT", "Are you sure you want to exit COnTORT?", icon = "warning", default = 'cancel')
-            if self.MsgBox_window == True:
+            if self.MsgBox_window == False:
+                return
+            else:
                 root.destroy()
 
     #Use TKinter to open a window to enter the NCBI GEO Search Term and select the GenBank File to use.
@@ -701,7 +714,10 @@ def main():
     root.mainloop()
     
     GDSsearch = contort_gui.GEO_Search_Term
-    GBFF = contort_gui.file_only
+    try:
+        GBFF = contort_gui.file_only
+    except:
+        exit
     
     #TO GENERATE THE GDS RESULT FILE USING ENTREZ from BIOPYTHON:
 
