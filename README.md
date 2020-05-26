@@ -37,7 +37,7 @@ You are encouraged to create a new directory each time you run this script.
 2. You can download the git repository and run the original scripts:
 
         git clone https://github.com/GLBRC/contort.git
-        python3.6 contort.py
+        python contort.py
 
 ### Requirements:
 
