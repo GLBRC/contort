@@ -28,7 +28,7 @@ Alternatively, you can clone the GitHub repository using the following command:
 
 Then to run COnTORT you can type the following into the command line (the location of contort.py will have to be indicated):
 
-	python3.6 contort.py
+	python contort.py
 
 Either way, COnTORT will present a Graphical User Interface (GUI) window for the uesr to provide the required information to run COnTORT. First the user will enter a search term that COnTORT will search at the NCBI GEO database and recover results for experiments involved in gene expression. This search will include all experiments categorized as high-throughput sequencing, expression profiling by array, and expression profiling by genome tiling array. Second, the user will open the GenBank file that will be used for annotating the results of the NCBI GEO search when combining the available gene expression data. The GenBank file can be downloaded from NCBI.
 
