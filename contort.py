@@ -210,7 +210,7 @@ def run_download_ftp_file(ftp_handle, name, dest, overwrite):
             with open('FTP_download_log.txt','a') as log:
                 log.write("downloaded: {0}\n".format(dest)) # write log file
                 log.close()
-        except FileNotFoundError:                      # error warning
+        except:                      # error warning
             with open('FTP_download_log.txt','a') as log:
                 log.write("FAILED: {0}".format(dest)) # write error in log file
                 log.close()
@@ -225,11 +225,13 @@ def run_mirror_ftp_dir(ftp_handle, name, overwrite, guess_by_extension):
     """
     
     for item in ftp_handle.nlst(name):
-        if run_is_ftp_dir(ftp_handle, item, guess_by_extension):
-            run_mirror_ftp_dir(ftp_handle, item, overwrite, guess_by_extension)
-        else:
-            run_download_ftp_file(ftp_handle, item, item, overwrite)
-
+        try:
+            if run_is_ftp_dir(ftp_handle, item, guess_by_extension):
+                run_mirror_ftp_dir(ftp_handle, item, overwrite, guess_by_extension)
+            else:
+                run_download_ftp_file(ftp_handle, item, item, overwrite)
+        except:
+            continue
 
 def download_ftp_tree(ftp_handle, FTPpath, destination, overwrite=False, guess_by_extension=True):
     """
@@ -243,7 +245,12 @@ def download_ftp_tree(ftp_handle, FTPpath, destination, overwrite=False, guess_b
     path = FTPpath.lstrip("/")
     original_directory = os.getcwd()    # remember working directory before function is executed
     os.chdir(destination)               # change working directory to ftp mirror directory
-    run_mirror_ftp_dir(ftp_handle, path, overwrite, guess_by_extension)
+    try:
+        run_mirror_ftp_dir(ftp_handle, path, overwrite, guess_by_extension)
+    except:
+        with open('FTP_error_log.txt', 'a') as log:
+            log.write(f"{path}")
+            log.close()
     os.chdir(original_directory)        # reset working directory to what it was before function exec
 
 def GEOannotate():
